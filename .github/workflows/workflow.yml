@@ -28,9 +28,6 @@ jobs:
       - run: ./scripts/ninja.js config && ./scripts/ninja.js build
         working-directory: bucklescript
 
-      - run: mkdir playground && mkdir playground/stdlib
-        working-directory: bucklescript
-
       - run: BS_PLAYGROUND=../../main/bundle ./scripts/repl.js -prepublish
         working-directory: bucklescript
 
