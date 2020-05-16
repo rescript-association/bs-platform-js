@@ -1,8 +1,5 @@
 name: Build bs-platform-js
-on:
-  push:
-    tags:
-    - '*'
+on: [push]
 jobs:
   run:
     name: Build
