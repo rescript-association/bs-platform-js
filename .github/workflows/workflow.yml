@@ -1,0 +1,49 @@
+name: Build bs-platform-js
+on:
+  push:
+    tags:
+    - '*'
+jobs:
+  run:
+    name: Build
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest]
+        ocaml-version: ["4.06.1"]
+        node-version: [12.x]
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+        with:
+          path: main
+
+      - name: Checkout BuckleScript repo
+        uses: actions/checkout@v2
+        with:
+          repository: BuckleScript/bucklescript
+          path: bucklescript
+
+      - run: git submodule update --init && ./scripts/buildocaml.js
+        working-directory: bucklescript
+
+      - run: ./scripts/ninja.js config && ./scripts/ninja.js build
+        working-directory: bucklescript
+
+      - run: mkdir playground && mkdir playground/stdlib
+        working-directory: bucklescript
+
+      - run: BS_PLAYGROUND=../../main/bundle ./scripts/repl.js -prepublish
+        working-directory: bucklescript
+
+      - name: Test — print Sys.ocaml_version
+        run: node -e "require('./exports.js'); eval(ocaml.compile('Js.log Sys.ocaml_version').js_code)"
+        working-directory: main/bundle
+
+      - name: Archive npm artifacts
+        uses: actions/upload-artifact@v1
+        with:
+          name: bs-platform-js
+          path: main
+
