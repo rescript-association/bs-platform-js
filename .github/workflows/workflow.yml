@@ -1,5 +1,11 @@
 name: Build bs-platform-js
-on: [push]
+on:
+  push:
+    branches:
+      - '*'
+  schedule:
+    - cron: '* 0 * * *' # every day at midnight utc
+
 jobs:
   run:
     name: Build
