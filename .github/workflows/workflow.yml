@@ -19,9 +19,8 @@ jobs:
       - name: Checkout BuckleScript repo
         uses: actions/checkout@v2
         with:
-          repository: jchavarri/bucklescript # temporary, until https://github.com/BuckleScript/bucklescript/pull/4395 is merged
+          repository: bucklescript/bucklescript
           path: bucklescript
-          ref: 'fix-jsoo-remt' # temporary, until https://github.com/BuckleScript/bucklescript/pull/4395 is merged
 
       - run: git submodule update --init && ./scripts/buildocaml.js
         working-directory: bucklescript
