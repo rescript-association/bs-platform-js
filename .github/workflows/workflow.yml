@@ -25,8 +25,9 @@ jobs:
       - name: Checkout BuckleScript repo
         uses: actions/checkout@v2
         with:
-          repository: bucklescript/bucklescript
+          repository: jchavarri/bucklescript # temporary, until jsoo-refmt-load-static is merged
           path: bucklescript
+          ref: 'jsoo-refmt-load-static' # temporary, until jsoo-refmt-load-static is merged
 
       - run: git submodule update --init && ./scripts/buildocaml.js
         working-directory: bucklescript
