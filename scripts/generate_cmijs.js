@@ -95,9 +95,17 @@ libs.forEach(function installLib(lib) {
   /* module names containing a forward slash like @glennsl/bs-json can't be used as filenames directly */
   var outputFile = lib.replace(/\//g, "__");
   e(
+    `find ${libPath} -name "*.cmi" -or -name "*.cmj"`
+  );
+  e(
+    `find ${libPath} -name "*.cmi" -or -name "*.cmj" | xargs basename`
+  );
+  e(
     `find ${libPath} -name "*.cmi" -or -name "*.cmj" | xargs basename | xargs ${OCAMLRUN} ${JSOO} build-fs -o ${outputFile}.js -I ${libPath}`
   );
 });
+
+e(`cat reason-react.js`);
 
 e(`rm -rf lib`);
 e(`rm -rf node_modules`);
