@@ -34,6 +34,12 @@ jobs:
       - run: ./scripts/ninja.js config && ./scripts/ninja.js build
         working-directory: bucklescript
 
+      - run: node scripts/install.js
+        working-directory: bucklescript
+
+      - run: yarn link
+        working-directory: bucklescript
+
       - run: BS_PLAYGROUND=../../main/bundle ./scripts/repl.js -prepublish
         working-directory: bucklescript
 
@@ -43,6 +49,19 @@ jobs:
 
       - name: Build 3rd party libs
         run: ./scripts/generate_cmijs.js
+        working-directory: main
+
+      - name: Test — 3rd party libs
+        run: |
+          node -e "
+          require('./bundle/exports.js');
+          require('./cmijs/reason-react.js');
+          var assert = require('assert');
+          assert(
+            reason
+              .compile('let t = ReactDOMRe.renderToElementWithId(<div />);')
+              .js_code.indexOf('ReactDOMRe.renderToElementWithId') > 0
+          );"
         working-directory: main
 
       - name: Archive npm artifacts

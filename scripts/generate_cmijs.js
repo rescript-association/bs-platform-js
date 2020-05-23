@@ -32,6 +32,8 @@ function e(cmd) {
 
 if (!fs.existsSync(cmijsDir)) {
   fs.mkdirSync(cmijsDir);
+}
+if (!fs.existsSync(path.join(cmijsDir, "src"))) {
   fs.mkdirSync(path.join(cmijsDir, "src"));
 }
 
