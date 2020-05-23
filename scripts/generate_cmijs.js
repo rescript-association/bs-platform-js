@@ -6,7 +6,7 @@ var path = require("path");
 var libs = require("../third_party_libs.json");
 
 if (!process.env.BS_FOLDER) {
-  var defaultBsFolder = path.join(__dirname, "..", "bucklescript");
+  var defaultBsFolder = path.join(__dirname, "..", "..", "bucklescript");
   console.warn(`BS_FOLDER env var unset, defaulting to ${defaultBsFolder}`);
   process.env.BS_FOLDER = defaultBsFolder;
 }
