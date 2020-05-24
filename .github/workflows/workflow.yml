@@ -56,7 +56,7 @@ jobs:
         run: |
           node -e "
           require('./bundle/exports.js');
-          require('./packages/reason-react.cmij.js');
+          require('./packages/reason-react/cmij.js');
           var assert = require('assert');
           assert(
             reason
