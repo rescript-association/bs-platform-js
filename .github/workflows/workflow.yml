@@ -48,15 +48,15 @@ jobs:
         run: node -e "require('./exports.js'); eval(ocaml.compile('Js.log Sys.ocaml_version').js_code)"
         working-directory: main/bundle
 
-      - name: Build 3rd party libs
-        run: ./scripts/generate_cmijs.js
+      - name: Build 3rd party packages
+        run: ./scripts/generate_packages.js
         working-directory: main
 
-      - name: Test — 3rd party libs
+      - name: Test — 3rd party packages
         run: |
           node -e "
           require('./bundle/exports.js');
-          require('./cmijs/reason-react.js');
+          require('./packages/reason-react.cmij.js');
           var assert = require('assert');
           assert(
             reason
@@ -65,9 +65,15 @@ jobs:
           );"
         working-directory: main
 
-      - name: Archive npm artifacts
+      - name: Archive bundle artifacts
         uses: actions/upload-artifact@v1
         with:
           name: bs-platform-js
-          path: main
+          path: main/bundle
+
+      - name: Archive packages artifacts
+        uses: actions/upload-artifact@v1
+        with:
+          name: packages
+          path: packages
 

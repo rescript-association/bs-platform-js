@@ -3,7 +3,7 @@ var child_process = require("child_process");
 var fs = require("fs");
 var path = require("path");
 
-var libs = require("../third_party_libs.json");
+var packages = require("../third_party_packages.json");
 
 if (!process.env.BS_FOLDER) {
   var defaultBsFolder = path.join(__dirname, "..", "..", "bucklescript");
@@ -12,13 +12,13 @@ if (!process.env.BS_FOLDER) {
 }
 var bsFolder = process.env.BS_FOLDER;
 
-var cmijsDir = path.join(__dirname, "..", "cmijs");
+var packagesDir = path.join(__dirname, "..", "packages");
 var nativePath = path.join(bsFolder, "native", "4.06.1", "bin");
 var OCAMLRUN = path.join(nativePath, "ocamlrun");
 var JSOO = path.join(bsFolder, "vendor", "js_of_ocaml.bc");
 
 var config = {
-  cwd: cmijsDir,
+  cwd: packagesDir,
   encoding: "utf8",
   stdio: [0, 1, 2],
   shell: true,
@@ -30,16 +30,16 @@ function e(cmd) {
   console.log(`<<<<<<`);
 }
 
-if (!fs.existsSync(cmijsDir)) {
-  fs.mkdirSync(cmijsDir);
+if (!fs.existsSync(packagesDir)) {
+  fs.mkdirSync(packagesDir);
 }
-if (!fs.existsSync(path.join(cmijsDir, "src"))) {
-  fs.mkdirSync(path.join(cmijsDir, "src"));
+if (!fs.existsSync(path.join(packagesDir, "src"))) {
+  fs.mkdirSync(path.join(packagesDir, "src"));
 }
 
 var bsconfigJson = JSON.stringify(
   {
-    name: "cmijs",
+    name: "packages",
     version: "0.1.0",
     sources: {
       dir: "src",
@@ -47,10 +47,10 @@ var bsconfigJson = JSON.stringify(
     },
     "package-specs": {
       module: "commonjs",
-      "in-source": true,
+      "in-source": false,
     },
     suffix: ".bs.js",
-    "bs-dependencies": libs,
+    "bs-dependencies": packages,
     warnings: {
       error: "+101",
     },
@@ -60,13 +60,13 @@ var bsconfigJson = JSON.stringify(
   2
 );
 
-fs.writeFileSync(`/${cmijsDir}/bsconfig.json`, bsconfigJson, {
+fs.writeFileSync(`/${packagesDir}/bsconfig.json`, bsconfigJson, {
   encoding: "utf8",
 });
 
 var packageJson = JSON.stringify(
   {
-    name: "cmijs",
+    name: "packages",
     version: "0.1.0",
     scripts: {
       build: "bsb -make-world",
@@ -76,12 +76,12 @@ var packageJson = JSON.stringify(
   2
 );
 
-fs.writeFileSync(`/${cmijsDir}/package.json`, packageJson, {
+fs.writeFileSync(`/${packagesDir}/package.json`, packageJson, {
   encoding: "utf8",
 });
 
-libs.forEach(function installLib(lib) {
-  e(`yarn add ${lib}`);
+packages.forEach(function installLib(package) {
+  e(`yarn add ${package}`);
 });
 
 /* So that postinstall script is executed and node_modules/.bin get symlinks to bs-platform binaries */
@@ -90,16 +90,21 @@ e(`yarn add bs-platform`);
 e(`yarn link bs-platform`);
 e(`yarn build`);
 
-libs.forEach(function installLib(lib) {
-  var libPath = path.join(cmijsDir, "node_modules", lib, "lib", "ocaml");
-  /* module names containing a forward slash like @glennsl/bs-json can't be used as filenames directly */
-  var outputFile = lib.replace(/\//g, "__");
+packages.forEach(function installLib(package) {
+  var libOcamlFolder = path.join(packagesDir, "node_modules", package, "lib", "ocaml");
+  var libJsFolder = path.join(packagesDir, "node_modules", package, "lib", "js");
+  var outputFolder = path.join(packagesDir, package);
+  var cmijFile = path.join(outputFolder, `cmij.js`);
+  if (!fs.existsSync(outputFolder)) {
+    fs.mkdirSync(outputFolder, { recursive: true });
+  }
   e(
-    `find ${libPath} -name "*.cmi" -or -name "*.cmj" | xargs -n1 basename | xargs ${OCAMLRUN} ${JSOO} build-fs -o ${outputFile}.js -I ${libPath}`
+    `find ${libJsFolder} -name '*.js' -exec cp {} ${outputFolder} \\;`
+  );
+  e(
+    `find ${libOcamlFolder} -name "*.cmi" -or -name "*.cmj" | xargs -n1 basename | xargs ${OCAMLRUN} ${JSOO} build-fs -o ${cmijFile} -I ${libOcamlFolder}`
   );
 });
-
-// e(`cat reason-react.js`);
 
 e(`rm -rf lib`);
 e(`rm -rf node_modules`);
