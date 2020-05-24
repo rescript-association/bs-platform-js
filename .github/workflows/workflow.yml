@@ -75,5 +75,5 @@ jobs:
         uses: actions/upload-artifact@v1
         with:
           name: packages
-          path: packages
+          path: main/packages
 
