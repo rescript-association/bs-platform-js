@@ -25,13 +25,19 @@ jobs:
       - name: Checkout BuckleScript repo
         uses: actions/checkout@v2
         with:
-          repository: bucklescript/bucklescript
+          repository: BuckleScript/bucklescript
           path: bucklescript
 
       - run: git submodule update --init && ./scripts/buildocaml.js
         working-directory: bucklescript
 
       - run: ./scripts/ninja.js config && ./scripts/ninja.js build
+        working-directory: bucklescript
+
+      - run: node scripts/install.js
+        working-directory: bucklescript
+
+      - run: yarn link
         working-directory: bucklescript
 
       - run: BS_PLAYGROUND=../../main/bundle ./scripts/repl.js -prepublish
@@ -41,9 +47,32 @@ jobs:
         run: node -e "require('./exports.js'); eval(ocaml.compile('Js.log Sys.ocaml_version').js_code)"
         working-directory: main/bundle
 
-      - name: Archive npm artifacts
+      - name: Build 3rd party packages
+        run: ./scripts/generate_packages.js
+        working-directory: main
+
+      - name: Test — 3rd party packages
+        run: |
+          node -e "
+          require('./bundle/exports.js');
+          require('./packages/reason-react/cmij.js');
+          var assert = require('assert');
+          assert(
+            reason
+              .compile('let t = ReactDOMRe.renderToElementWithId(<div />);')
+              .js_code.indexOf('ReactDOMRe.renderToElementWithId') > 0
+          );"
+        working-directory: main
+
+      - name: Archive bundle artifacts
         uses: actions/upload-artifact@v1
         with:
           name: bs-platform-js
-          path: main
+          path: main/bundle
+
+      - name: Archive packages artifacts
+        uses: actions/upload-artifact@v1
+        with:
+          name: packages
+          path: main/packages
 
