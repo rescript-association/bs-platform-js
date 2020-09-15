@@ -6,7 +6,7 @@ var path = require("path");
 var packages = require("../third_party_packages.json");
 
 if (!process.env.BS_FOLDER) {
-  var defaultBsFolder = path.join(__dirname, "..", "..", "bucklescript");
+  var defaultBsFolder = path.join(__dirname, "..", "..", "rescript-compiler");
   console.warn(`BS_FOLDER env var unset, defaulting to ${defaultBsFolder}`);
   process.env.BS_FOLDER = defaultBsFolder;
 }
@@ -46,7 +46,7 @@ var bsconfigJson = JSON.stringify(
       subdirs: true,
     },
     "package-specs": {
-      module: "commonjs",
+      module: "es6",
       "in-source": false,
     },
     suffix: ".bs.js",
@@ -92,14 +92,14 @@ e(`yarn build`);
 
 packages.forEach(function installLib(package) {
   var libOcamlFolder = path.join(packagesDir, "node_modules", package, "lib", "ocaml");
-  var libJsFolder = path.join(packagesDir, "node_modules", package, "lib", "js");
+  var libEs6Folder = path.join(packagesDir, "node_modules", package, "lib", "es6");
   var outputFolder = path.join(packagesDir, package);
   var cmijFile = path.join(outputFolder, `cmij.js`);
   if (!fs.existsSync(outputFolder)) {
     fs.mkdirSync(outputFolder, { recursive: true });
   }
   e(
-    `find ${libJsFolder} -name '*.js' -exec cp {} ${outputFolder} \\;`
+    `find ${libEs6Folder} -name '*.js' -exec cp {} ${outputFolder} \\;`
   );
   e(
     `find ${libOcamlFolder} -name "*.cmi" -or -name "*.cmj" | xargs -n1 basename | xargs ${OCAMLRUN} ${JSOO} build-fs -o ${cmijFile} -I ${libOcamlFolder}`
